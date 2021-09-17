@@ -156,3 +156,114 @@ demo：
 
 今天就写到这吧，明天写下组件。
 
+2021.09.17 更新-组件部分
+## 常用组件介绍
+这篇学习笔记主要记录弹出层（layer）、日期（laydate）、分页、数据表格的使用方法。
+组件的使用思路是在html页面里给个盒子，然后通过js绑定盒子，把内容导进去。
+和苔藓微景观制作思路比较像。微型景观制作好了，但没有在现场，需要搬过来，然后给个玻璃缸装上。
+
+## layer
+弹出层，是一个单独使用也非常高频的组件。注意独立使用，需要在layer.js之前需要先引入jquery，下面介绍的是模块化使用方法。
+
+### 引入方法
+引入layui的css与js文件后，在script中使用layui.use（）加载模块
+
+#### layer（弹出层）
+##### 基础参数
+[万事不决问文档](https://www.layui.com/doc/modules/layer.html)
+这里说下使用思路，type控制传入类型，title是弹出层的标题，content则是弹出层的内容。
+大概类似于进蛋糕店，先和店员说要个什么类型的蛋糕，上面的贺卡要写啥，蛋糕应该是什么样。
+ps:注意content里面给到的是数组
+pps：layer.msg() //yyds!
+
+#### laydate（日期）
+[万事不决问文档](https://www.layui.com/doc/modules/laydate.html)
+看介绍貌似是个古老的坑得到了新填，这个组件开启range后在chorme上的显示效果有点诡异（右栏留白），在edge上效果还挺好的。
+
+#### page（分页）
+[万事不决问文档](https://www.layui.com/doc/modules/laypage.html)
+搞不懂为啥到绑定elem忽然就不要井号了……
+count在最开始练习的时候写死，后期可以通过从后台获取数据进行重构。
+curr一般是给1，从第1页开始查询。
+注意要出现翻页的前后箭头，用`layout:['prev', 'page', 'next']`
+ps:自己的js学的是真得一般般，数据渲染部分完全没沾到……要加油！
+
+#### table（数据表格）
+[万事不决问文档](https://www.layui.com/doc/modules/table.html)
+小白前端看文档看到“一切都是那么熟悉”晕了哈哈哈，B站教学视频里面是新建一个json文件，然后把返回数据粘进去，再慢慢写html页面。
+
+##### 渲染方法
+表格渲染有三种方式，官方比较推荐的是方法渲染。
+方法渲染是啥呢，接着用微缩景观那个比方吧，就是微缩景观全部用js制作，全部做完了再搬到空的大玻璃缸里，这样手艺人只要集中精力在js上就可以了。
+自动渲染则是先进到缸子里，然后边搭边做搭配调整。
+转换静态表格就是前人辛辛苦苦在缸子里搭了些微缩景观，但没用到layui，于是需要给它们粘上定位符，然后让layui自动粘上去。
+
+##### 开启分页
+开启分页的方法就是往render里丢个page:true（记得逗号不要忘了）。
+
+##### 开启表头
+官方说要驾驭不了layui table，注意力搁这准没错。
+给个栗子：
+```
+//方法渲染：
+table.render({
+  cols:  [[ //标题栏
+    {checkbox: true}
+    ,{field: 'id', title: 'ID', width: 80}
+    ,{field: 'username', title: '用户名', width: 120}
+  ]]
+});
+```
+
+
+##### 绑定工具条模板
+直接上官方栗子吧：
+```
+<script type="text/html" id="barDemo">
+  <a class="layui-btn layui-btn-xs" lay-event="detail">查看</a>
+  <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+  <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+  
+  <!-- 这里同样支持 laytpl 语法，如： -->
+  {{#  if(d.auth > 2){ }}
+    <a class="layui-btn layui-btn-xs" lay-event="check">审核</a>
+  {{#  } }}
+</script> //这段laytpl语法没太懂是什么东西....
+ 
+注意：属性 lay-event="" 是模板的关键所在，值可随意定义。
+```
+绑定监听：
+```
+//工具条事件
+table.on('tool(test)', function(obj){ //注：tool 是工具条事件名，test 是 table 原始容器的属性 lay-filter="对应的值"
+  var data = obj.data; //获得当前行数据
+  var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+  var tr = obj.tr; //获得当前行 tr 的 DOM 对象（如果有的话）
+ 
+  if(layEvent === 'detail'){ //查看
+    //do somehing
+  } else if(layEvent === 'del'){ //删除
+    layer.confirm('真的删除行么', function(index){
+      obj.del(); //删除对应行（tr）的DOM结构，并更新缓存
+      layer.close(index);
+      //向服务端发送删除指令
+    });
+  } else if(layEvent === 'edit'){ //编辑
+    //do something
+    
+    //同步更新缓存对应的值
+    obj.update({
+      username: '123'
+      ,title: 'xxx'
+    });
+  } else if(layEvent === 'LAYTABLE_TIPS'){
+    layer.alert('Hi，头部工具栏扩展的右侧图标。');
+  }
+});
+```
+注意layer-filter是精髓哈，命名一定要和下面的tool(事件名)对应起来。
+这个部分掌握得很一般，下个周做一下demo继续完善吧~
+
+
+
+
